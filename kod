@@ -1,0 +1,161 @@
+import random
+
+class Zbran:
+
+    def __init__(self, nazev, atk, dur):
+        self.nazev = nazev
+        self._atk = atk
+        self._dur = dur
+    
+    @property
+    def atk(self):
+        return "Hodnotu útoku zbraně nelze zobrazit."
+    @atk.setter
+    def atk(self):
+        return "Hodnotu útoku zbraně nelze přepsat."
+    
+    @property
+    def dur(self):
+        return "Hodnotu výdrže zbraně nelze zobrazit."
+    @dur.setter
+    def dur(self):
+        return "Hodnotu výdrže zbraně nelze přepsat."
+    
+    def __str__(self):
+        return f" nazev: {self.nazev}, ATK:{self.atk}, DUR:{self.dur}"
+
+    
+
+class Rytir:
+
+    def __init__(self, jmeno, atk, hp, df, mec, stesti):
+        self.jmeno = jmeno
+        self._atk = atk
+        self.hp = hp
+        self._df = df
+        self.mec = mec
+        self._stesti = stesti
+
+
+    @property
+    def atk(self):
+        return "Hodnotu útoku hráče nelze zobrazit."
+    @atk.setter
+    def atk(self):
+        return "Hodnotu útoku hráče nelze přepsat."
+    
+    @property
+    def df(self):
+        return "Hodnotu obrany hráče nelze zobrazit."
+    @df.setter
+    def df(self):
+        return "Hodnotu obrany hráče nelze zobrazit."
+    
+    def __str__(self):
+        return f"Jmeno:{self.jmeno}; ATK:{self.atk}; HP: {self.hp}; DEF:{self.df}; Mec:{self.mec}"
+    
+    
+    def kriticky_zasah(self, dmg):
+        probability = self._stesti / 100
+        if random.random() < probability:
+            dmg = dmg*2
+        return dmg
+
+    def zautocit(self, rytir):
+        if self.mec != None and self.mec._dur > 0:
+            dmg = self._atk + self.mec._atk
+            self.mec._dur -= 1
+        else:
+            dmg = self._atk
+        dmg = self.kriticky_zasah(dmg)
+        rytir.hp -= dmg
+
+
+
+class Lucistnik(Rytir):
+
+    def __init__(self, jmeno, atk, hp, df, mec, stesti):
+        super().__init__(jmeno, atk, hp, df, mec, stesti)
+
+    def zautocit(self,rytir):
+        if self.mec != None and self.mec._dur >0:
+            dmg = self.mec._atk
+            self.mec._dur -= 1
+        else:
+            dmg = self._atk
+        dmg = self.kriticky_zasah(dmg)
+        rytir.hp -= dmg
+        
+
+    
+class Mag(Rytir):
+
+    def __init__(self, jmeno, atk, hp, df, mec, stesti):
+        super().__init__(jmeno, atk, hp, df, mec, stesti)
+
+    def kriticky_zasah(self, dmg):
+        probability = self._stesti / 80
+        if random.random() < probability:
+            dmg = dmg*2
+        return dmg
+
+    def zautocit(self,rytir):
+        if self.mec != None and self.mec._dur >0:
+            dmg = self.mec._atk
+            self.mec._dur -= 1
+        else:
+            dmg = self._atk
+        dmg = self.kriticky_zasah(dmg)
+        rytir.hp -= dmg
+
+
+
+class Turnaj:
+
+    def __init__(self):
+        self.seznam_rytiru = []
+
+    def registrace(self, rytir):
+        self.seznam_rytiru.append(rytir)
+    
+    def vybrat_soupere(self):
+        r1 = random.choice(self.seznam_rytiru)
+        vyber_druheho = True
+        while vyber_druheho == True:
+            r2 = random.choice(self.seznam_rytiru)
+            if r2 != r1:
+                vyber_druheho = False
+        return r1,r2
+    
+    def boj(self, souper1, souper2):
+        while souper1.hp >0 and souper2.hp >0:
+            souper1.zautocit(souper2)
+            souper2.zautocit(souper1)
+        if souper1.hp <=0 and souper2.hp <=0:
+            print("Soupeři se zabili navzájem.")
+        elif souper1.hp <= 0:
+            print(f"VYHRÁL soupeř {souper2.jmeno}, zbylo mu {souper2.hp}HP.")
+        else:
+            print(f"VYHRÁL soupeř {souper1.jmeno}, zbylo mu {souper1.hp}HP.")
+
+        
+
+kudla = Zbran("kudla", 3, 2)
+maceta = Zbran("maceta", 7, 4)
+luk = Zbran("luk", 50, 10)
+kouzelna_hul = Zbran("kouzelna hul", 45, 7)
+
+pepa = Rytir("Pepa", 50, 100, 4, kudla, 10)
+garen = Rytir("Garen", 48, 110, 8, maceta, 3)
+ashe = Lucistnik("Ashe", 40, 100, 3, luk, 3)
+veigar = Mag("Veigar", 50, 50, 2, kouzelna_hul, 10)
+
+derby = Turnaj()
+derby.registrace(pepa)
+derby.registrace(garen)
+derby.registrace(ashe)
+derby.registrace(veigar)
+
+r1,r2 = derby.vybrat_soupere()
+print(f"Do turnaje byli vybráni soupeři {r1.jmeno} a {r2.jmeno}\n{r1}\n{r2}")
+derby.boj(r1,r2)
